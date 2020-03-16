@@ -11,6 +11,20 @@ class Games extends Model{
         })
     }
 
+    static association(models) {
+        this.belongsTo(models.Desenvolvedores, { 
+            foreignKey: 'id_desenvolvedor', 
+            as: 'desenvolvedor' 
+        })
+
+        this.belongsToMany(models.Consoles, {
+            foreignKey: 'id_game',
+            through: 'plataformas',
+            as: 'consoles',
+        })
+
+    }
+
 }
 
 module.exports = Games;

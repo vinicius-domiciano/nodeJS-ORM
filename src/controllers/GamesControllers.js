@@ -34,7 +34,7 @@ module.exports = {
         res.json(games)
     },
 
-    async new (req, res) {
+    async newStorage (req, res) {
         const { nome, descricao, id_desenvolvedor, consoles } = req.body;
 
         console.log(consoles)
@@ -58,7 +58,7 @@ module.exports = {
         return res.json(game);
     },
 
-    async searchPk(req, res) {
+    async searchId(req, res) {
         const { id } = req.params;
 
         const game = await Games.findByPk(id, {
@@ -88,5 +88,66 @@ module.exports = {
             res.status(400).json({'error': 'Game Not Found'})
 
         return res.json(game)
+    },
+
+    async deleteStorage(req, res) {
+        const { id } = req.params;
+
+        const deletedGame = await Games.destroy({
+            where: {
+                id,
+            },
+        })
+
+        if(!deletedGame){
+            return res.json({"error": "Games Not Found"})
+        }
+
+        return res.status(200).json()
+
+    },
+
+    async dataUpdate(req, res) {
+        const { id } = req.params;
+
+        let game = req.body;
+        console.log(game)
+
+        const updatedGame = await Games.update(game, {
+            where: {
+                id
+            }
+        })
+
+        if(!updatedGame)
+            return res.json({"error": "Game Not Found"})
+
+        game = {id, ...game}
+
+        return res.status(200).json(game)
+    },
+
+    async consoleUpdate(req, res) {
+        const { id } = req.params;
+
+        let { consoles } = req.body;
+
+        let game = await Games.findByPk(id);
+
+        if(!game)
+            return res.json({"error": "Game Not Found"})
+
+        let platform = await Console.findAll({
+            where: {
+                [Op.or]: consoles
+            }
+        })
+
+        game.setConsoles(platform)
+
+        game = game.get()
+
+        res.json({'msg': 'success'})
     }
+
 }

@@ -9,7 +9,7 @@ require('./database/index')
 
 app.use(express.json())
 
-app.use('/dev', dev)
+app.use('/devs', dev)
 app.use('/jogos', jogos)
 app.use('/consoles', consoles)
 

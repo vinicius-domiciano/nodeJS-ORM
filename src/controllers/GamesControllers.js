@@ -2,28 +2,30 @@ const Games = require('../models/Games')
 const Console = require('../models/Consoles')
 const { Op } = require('sequelize')
 
+const tablesAssociate = [
+    {
+        association: 'desenvolvedor',
+        attributes: [ 
+            ['id', 'id_desenvolvedor'],
+            'nome'
+        ],
+    },
+    {
+        association: 'consoles',
+        attributes: [
+            ['id', 'id_console'],
+            'nome'
+        ],
+        through: {
+            attributes: []
+        },
+    }
+]
+
 module.exports = {
     async listAll( req, res ) {
         const games = await Games.findAll({
-            include: [
-                {
-                    association: 'desenvolvedor',
-                    attributes: [ 
-                        ['id', 'id_desenvolvedor'],
-                        'nome'
-                    ],
-                },
-                {
-                    association: 'consoles',
-                    attributes: [
-                        ['id', 'id_console'],
-                        'nome'
-                    ],
-                    through: {
-                        attributes: []
-                    },
-                }
-            ],
+            include: tablesAssociate,
             attributes: ['id', 'nome', 'descricao'],
         });
 
@@ -36,9 +38,7 @@ module.exports = {
 
     async newStorage (req, res) {
         const { nome, descricao, id_desenvolvedor, consoles } = req.body;
-
-        console.log(consoles)
-
+        
         const game = await Games.create({ 
             nome,
             descricao, 
@@ -51,8 +51,6 @@ module.exports = {
             }
         })
 
-        console.log(plataforma)
-
         await game.addConsoles(plataforma)
 
         return res.json(game);
@@ -63,25 +61,7 @@ module.exports = {
 
         const game = await Games.findByPk(id, {
             attributes: ['id', 'nome', 'descricao'],
-            include: [
-                {
-                    association: 'desenvolvedor',
-                    attributes: [ 
-                        ['id', 'id_desenvolvedor'],
-                        'nome'
-                    ],
-                },
-                {
-                    association: 'consoles',
-                    attributes: [
-                        ['id', 'id_console'],
-                        'nome'
-                    ],
-                    through: {
-                        attributes: []
-                    },
-                },
-            ],
+            include: tablesAssociate,
         })
 
         if(!game)
@@ -100,7 +80,7 @@ module.exports = {
         })
 
         if(!deletedGame){
-            return res.json({"error": "Games Not Found"})
+            return res.json({"error": "Game Not Found"})
         }
 
         return res.status(200).json()
@@ -111,7 +91,8 @@ module.exports = {
         const { id } = req.params;
 
         let game = req.body;
-        console.log(game)
+        // if(!await Games.findByPk(id))
+        //     return res.json({"error":"Game Not Found"})
 
         const updatedGame = await Games.update(game, {
             where: {
@@ -119,20 +100,25 @@ module.exports = {
             }
         })
 
-        if(!updatedGame)
+        if(!updatedGame[0])
             return res.json({"error": "Game Not Found"})
 
-        game = {id, ...game}
+        game = await Games.findByPk(id, {
+            attributes: ['id', 'nome', 'descricao'],
+            include: tablesAssociate,
+        })
 
         return res.status(200).json(game)
     },
 
-    async consoleUpdate(req, res) {
-        const { id } = req.params;
+    async platformGame(req, res) {
+        const { id } = req.params
+        let { consoles } = req.body
 
-        let { consoles } = req.body;
-
-        let game = await Games.findByPk(id);
+        let game = await Games.findByPk(id, {
+            attributes: ['id', 'nome', 'descricao'],
+            include: tablesAssociate,
+        })
 
         if(!game)
             return res.json({"error": "Game Not Found"})
@@ -143,11 +129,15 @@ module.exports = {
             }
         })
 
+        if(platform.length == 0)
+            return res.json({'error':'Console Not Found'})
+
         game.setConsoles(platform)
 
         game = game.get()
+        game.consoles = platform
 
-        res.json({'msg': 'success'})
+        res.json(game)
     }
 
 }

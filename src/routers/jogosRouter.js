@@ -8,6 +8,6 @@ router.post('/', gamesController.newStorage)
 router.delete('/:id', gamesController.deleteStorage)
 router.put('/:id', gamesController.dataUpdate)
 
-router.put('/:id/consoles', gamesController.consoleUpdate)
+router.post('/:id/consoles', gamesController.platformGame)
 
 module.exports = router;

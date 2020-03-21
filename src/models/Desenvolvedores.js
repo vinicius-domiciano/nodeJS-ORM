@@ -13,7 +13,7 @@ class Desenvolvedores extends Model{
 	static association(models){
 		this.hasMany(models.Games, {
 			foreignKey: 'id_desenvolvedor',
-			as: 'desenvolvedor'
+			as: 'games'
 		})
 	}
 

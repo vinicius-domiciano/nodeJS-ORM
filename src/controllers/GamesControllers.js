@@ -2,15 +2,19 @@ const Games = require('../models/Games')
 const Console = require('../models/Consoles')
 const { Op } = require('sequelize')
 
-const tablesAssociate = [
-    {
+const devsAssociate = () => {
+    return {
         association: 'desenvolvedor',
         attributes: [ 
             ['id', 'id_desenvolvedor'],
             'nome'
         ],
-    },
-    {
+    }
+}
+
+const consolesAssociate = () => {
+
+    return {
         association: 'consoles',
         attributes: [
             ['id', 'id_console'],
@@ -20,12 +24,16 @@ const tablesAssociate = [
             attributes: []
         },
     }
-]
+
+}
 
 module.exports = {
     async listAll( req, res ) {
         const games = await Games.findAll({
-            include: tablesAssociate,
+            include: [
+                devsAssociate(),
+                consolesAssociate(),
+            ],
             attributes: ['id', 'nome', 'descricao'],
         });
 
@@ -61,7 +69,10 @@ module.exports = {
 
         const game = await Games.findByPk(id, {
             attributes: ['id', 'nome', 'descricao'],
-            include: tablesAssociate,
+            include: [
+                devsAssociate(),
+                consolesAssociate(),
+            ],
         })
 
         if(!game)
@@ -117,7 +128,10 @@ module.exports = {
 
         let game = await Games.findByPk(id, {
             attributes: ['id', 'nome', 'descricao'],
-            include: tablesAssociate,
+            include: [
+                devsAssociate(),
+                consolesAssociate(),
+            ],
         })
 
         if(!game)

@@ -6,6 +6,7 @@ class Games extends Model{
         super.init({
             nome: DataTypes.STRING,
             descricao: DataTypes.TEXT,
+            image:DataTypes.TEXT,
         }, { 
             sequelize,
         })

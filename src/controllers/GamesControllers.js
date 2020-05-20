@@ -1,6 +1,7 @@
 const Games = require('../models/Games')
 const Console = require('../models/Consoles')
 const { Op } = require('sequelize')
+const fs = require('fs')
 
 const devsAssociate = () => {
     return {
@@ -34,7 +35,7 @@ module.exports = {
                 devsAssociate(),
                 consolesAssociate(),
             ],
-            attributes: ['id', 'nome', 'descricao'],
+            attributes: ['id', 'nome', 'descricao', 'image'],
         });
 
         if(!games){
@@ -68,7 +69,7 @@ module.exports = {
         const { id } = req.params;
 
         const game = await Games.findByPk(id, {
-            attributes: ['id', 'nome', 'descricao'],
+            attributes: ['id', 'nome', 'descricao', 'image'],
             include: [
                 devsAssociate(),
                 consolesAssociate(),
@@ -152,6 +153,41 @@ module.exports = {
         game.consoles = platform
 
         res.json(game)
-    }
+    },
+
+    async photoUpload(req, res) {
+        const { filename } = req.file
+        const { id } = req.params
+        
+        let game = await Games.findByPk(id)
+
+        if(!game){
+            fs.unlinkSync('./images/' + filename)
+            return res.status(404).json({'error':'game Not Found'})
+        }
+
+        game = game.get()
+
+        console.log(game)
+
+        if(game.image){
+            fs.unlinkSync('./images/' + game.imagem)
+        }
+
+        const addImage = await Games.update({image: filename},{
+            where: {
+                id
+            }
+        })
+
+        if(!addImage[0]){
+            fs.unlinkSync('./images/' + filename)
+            return res.status(404).json({'error':'No Data Updated'})
+        }
+
+
+        return res.status(200).send({'msg': 'Sussess'})
+
+    },
 
 }
